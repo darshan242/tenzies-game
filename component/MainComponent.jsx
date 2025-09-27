@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Die from "./Die";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { nanoid } from "nanoid";
+import ConfettiCustom from "./ConfettiCustom";
 
 const MainComponent = () => {
-  const [dieNumber, setDieNumber] = useState(generateAllNewDice());
+  const [dieNumber, setDieNumber] = useState(() => generateAllNewDice()); //Keeping state as a normal value will cause it to rerender every time when we click on numbers
+  const buttonRef = useRef(null);
 
   const gameWon =
     dieNumber.every((die) => die.isHeld) &&
@@ -23,13 +25,17 @@ const MainComponent = () => {
     }));
   }
   function rollDice() {
-    const clickedDie = dieNumber.map((element) => {
-      if (element.isHeld === true) {
-        return element;
-      }
-      return { ...element, value: Math.ceil(Math.random() * 6) };
-    });
-    setDieNumber(clickedDie);
+    if (!gameWon) {
+      const clickedDie = dieNumber.map((element) => {
+        if (element.isHeld === true) {
+          return element;
+        }
+        return { ...element, value: Math.ceil(Math.random() * 6) };
+      });
+      setDieNumber(clickedDie);
+    } else {
+      setDieNumber(generateAllNewDice());
+    }
   }
   function hold(id) {
     const updatedDie = dieNumber.map((element) => {
@@ -41,8 +47,15 @@ const MainComponent = () => {
     setDieNumber(updatedDie);
   }
 
+  useEffect(() => {
+    if (gameWon) {
+      buttonRef.current.focus();
+    }
+  }, [gameWon]);
+
   return (
     <main>
+      {gameWon && <ConfettiCustom></ConfettiCustom>}
       <h1 className="title">Tenzies</h1>
       <p className="instructions">
         Roll until all dice are the same. Click each die to freeze it at its
@@ -61,7 +74,7 @@ const MainComponent = () => {
           );
         })}
       </div>
-      <button onClick={rollDice} className="roll-dice">
+      <button ref={buttonRef} onClick={rollDice} className="roll-dice">
         {gameWon ? "New Game" : "Roll"}
       </button>
     </main>
