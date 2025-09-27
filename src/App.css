@@ -1,0 +1,5 @@
+@media (max-width: 767px) {
+  div#root {
+    max-width: 80vh;
+  }
+}
